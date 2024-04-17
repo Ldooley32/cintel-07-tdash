@@ -85,7 +85,7 @@ with ui.layout_columns():
         @render_plotly
         def hist():
             return px.histogram(
-                filtered_df(),
+                data_frame =filtered_df(),
                 x="bill_length_mm",
                 y="bill_depth_mm",
                 color="species",
