@@ -5,5 +5,4 @@ seaborn
 pandas
 palmerpenguins
 plotly
-shinywidgets
 
