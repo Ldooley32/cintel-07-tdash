@@ -4,15 +4,17 @@ from faicons import icon_svg
 
 from shiny import reactive
 from shiny.express import input, render, ui
+from shinywidgets import render_plotly
+import plotly.express as px
 import palmerpenguins 
 
 #define penguin dataset
 df = palmerpenguins.load_penguins()
 
-#add page title
+# add page title
 ui.page_opts(title="LDooley's Penguins dashboard", fillable=True)
 
-#Create sidebar with Mass slider  and Species check boxes. 
+# Create sidebar with Mass slider and Species check boxes.
 with ui.sidebar(title="Penguins Mass / Species Option Controls "):
     ui.input_slider("mass", "Mass", 2000, 6000, 6000)
     ui.input_checkbox_group(
@@ -22,8 +24,7 @@ with ui.sidebar(title="Penguins Mass / Species Option Controls "):
         selected=["Adelie", "Gentoo", "Chinstrap"],
     )
 
-# create a space the add a header for resource include links to resources. 
-#The included link: GitHub Source, GitHub App, GitHub Issues, PyShiny Basic Dashboard Template      
+# create a space to add a header for resource links to GitHub, PyShiny, etc.
     ui.hr()
     ui.h6("Resource Links")
     ui.a(
@@ -53,17 +54,14 @@ with ui.sidebar(title="Penguins Mass / Species Option Controls "):
         target="_blank",
     )
 
-
-# Creating value boxes for penguin count, average bill length, and average bill mass using filtered df () to making it interactinve. 
+# Creating value boxes for penguin count, average bill length, and average bill mass using filtered df.
 with ui.layout_column_wrap(fill=False):
     with ui.value_box(showcase=icon_svg("earlybirds")):
         "Number of penguins"
 
-
         @render.text
         def count():
             return filtered_df().shape[0]
-
 
     with ui.value_box(showcase=icon_svg("ruler-horizontal")):
         "Average bill length"
@@ -79,38 +77,38 @@ with ui.layout_column_wrap(fill=False):
         def bill_depth():
             return f"{filtered_df()['bill_depth_mm'].mean():.1f} mm"
 
-#Create a scatter plot for bill lenght and bill depth using the filtered_df() to make plot interactive.
+# Create an interactive Plotly histogram for penguin mass using the filtered_df.
 with ui.layout_columns():
     with ui.card(full_screen=True):
         ui.card_header("Bill length and depth")
 
-        @render.plot
-        def length_depth():
-            return sns.scatterplot(
-                data=filtered_df(),
-                x="bill_length_mm",
-                y="bill_depth_mm",
-                hue="species",
+        @render_plotly
+        def hist():
+            histogram = px.histogram(
+                filtered_df(),
+                x="body_mass_g",
+                color="species",
+                labels={"body_mass_g": "Body Mass (g)"},
+                nbins=input.mass(),  # Use the input from the mass slider
             )
-#Create a date grid using the filtered_df interaction to select what information is on the grid..
-    with ui.card(full_screen=True):
-        ui.card_header("Penguin data")
+            return histogram
 
-        @render.data_frame
-        def summary_statistics():
-            cols = [
-                "species",
-                "island",
-                "bill_length_mm",
-                "bill_depth_mm",
-                "body_mass_g",
-            ]
-            return render.DataGrid(filtered_df()[cols], filters=True)
+# Create a data grid using the filtered_df to select information for display.
+with ui.card(full_screen=True):
+    ui.card_header("Penguin data")
 
+    @render.data_frame
+    def summary_statistics():
+        cols = [
+            "species",
+            "island",
+            "bill_length_mm",
+            "bill_depth_mm",
+            "body_mass_g",
+        ]
+        return render.DataGrid(filtered_df()[cols], filters=True)
 
-#ui.include_css(app_dir / "styles.css")
-
-# Define reactive cal to include the mass slide bar and the species check boxes.
+# Define reactive calc to include the mass slider and the species checkboxes.
 @reactive.calc
 def filtered_df():
     filt_df = df[df["species"].isin(input.species())]
