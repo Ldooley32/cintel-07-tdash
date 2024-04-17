@@ -80,18 +80,19 @@ with ui.layout_column_wrap(fill=False):
 # Create an interactive Plotly histogram for penguin mass using the filtered_df.
 with ui.layout_columns():
     with ui.card(full_screen=True):
-        ui.card_header("Bill length and depth")
+        ui.card_header("Bill length and Depth")
 
         @render_plotly
         def hist():
-            histogram = px.histogram(
+            return px.histogram(
                 filtered_df(),
-                x="body_mass_g",
+                x="bill_length_mm",
+                y="bill_depth_mm",
                 color="species",
-                labels={"body_mass_g": "Body Mass (g)"},
+                labels={"bill_length_mm": "Bill length (mm)", "bill_depth_mm": "Bill Depth (mm)" },
                 nbins=input.mass(),  # Use the input from the mass slider
             )
-            return histogram
+            
 
 # Create a data grid using the filtered_df to select information for display.
 with ui.card(full_screen=True):
